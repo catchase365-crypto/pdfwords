@@ -457,6 +457,8 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
                 if (result) break;
             }
 
+            const dictContainer = document.querySelector('.dict-content-container');
+            dictContainer.scrollTop = 0;
             if (result) {
                 contentArea.innerHTML = `
                     <div class="dict-word-title">${result.word}</div>
