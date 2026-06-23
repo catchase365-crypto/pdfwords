@@ -94,14 +94,8 @@
             min-width: 200px;
             overflow-y: auto;
             overflow-x: hidden;
-            background: #ffffff;
-            scroll-behavior: smooth;
-            position: relative;
-            transition: background 0.3s;
-        }
-
-        .pdf-panel.dark-mode {
             background: rgba(10, 15, 30, 0.6);
+            position: relative;
         }
 
         .pdf-viewer-content {
@@ -128,7 +122,6 @@
             display: block;
             width: 100% !important;
             height: auto !important;
-            animation: fadeInCanvas 0.4s ease-in;
             transition: filter 0.3s ease;
         }
 
@@ -249,27 +242,6 @@
             padding: 20px;
             border-bottom: 1px solid var(--card-border);
             background: rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, height 0.3s ease, opacity 0.3s ease;
-            overflow: hidden;
-        }
-        .sidebar-header.hidden {
-            height: 0;
-            padding: 0 20px;
-            opacity: 0;
-            transform: translateY(-20px);
-            pointer-events: none;
-        }
-        .toggle-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 10;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
         }
 
         .sidebar-title {
@@ -408,7 +380,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         <div class="pdf-panel" id="pdfPanel">
             <div class="pdf-viewer-content" id="pdfViewerContent">
                 <div class="welcome-box">
-                    <p style="font-size: 1.2rem; margin-bottom: 15px;">欢迎使用 PDF 智能点读机</p>
+                    <p style="font-size: 1.2rem; margin-bottom: 15px;">📚 欢迎使用 PDF 智能点读机</p>
                     <p style="font-size: 0.95rem; color: var(--text-muted);">请在右侧边栏加载您的 PDF 文件。点击或选取任意英文单词，即可同步调用本地词库。</p>
                 </div>
             </div>
@@ -422,8 +394,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         <div class="split-divider" id="splitDivider"></div>
 
         <div class="dict-sidebar" id="dictSidebar">
-            <button class="toggle-btn" id="toggleHeaderBtn" onclick="toggleSidebarHeader()">↕</button>
-            <div class="sidebar-header" id="sidebarHeader" style="display: flex; gap: 10px; padding: 15px 24px;">
+            <div class="sidebar-header" style="display: flex; gap: 10px; padding: 15px 24px;">
                 <button class="btn-action" onclick="document.getElementById('pdf-file-picker').click()">📂 PDF</button>
                 <button class="btn-action" style="background: #6366f1; color: white;" onclick="document.getElementById('dict-file-picker').click()">📥 词库</button>
                 <button class="btn-action" style="background: #475569; color: white;" onclick="togglePdfTheme()">🌓 模式</button>
@@ -568,7 +539,10 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
                 splitDivider.classList.remove('dragging');
                 document.body.style.userSelect = '';
                 document.body.style.touchAction = '';
-                if (currentPdfDoc) initVirtualRender();
+                if (currentPdfDoc) {
+                    const savedPage = findCurrentVisiblePage();
+                    initVirtualRender(savedPage);
+                }
             }
         };
         const moveDrag = (clientX) => {
@@ -592,6 +566,22 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         }, {passive: true});
         window.addEventListener('touchend', endDrag);
 
+        // 获取当前视野里最靠上的页面索引，用于重绘后精确定位
+        function findCurrentVisiblePage() {
+            const containers = document.querySelectorAll('.pdf-page-container');
+            let bestPage = 1;
+            let minTop = Infinity;
+            containers.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const dist = Math.abs(rect.top);
+                if (dist < minTop) {
+                    minTop = dist;
+                    bestPage = parseInt(el.dataset.pageNumber);
+                }
+            });
+            return bestPage;
+        }
+
         // 4. ✅ 修复核心：PDF 智能虚拟懒加载 (防内存溢出)
         filePicker.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -603,7 +593,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
                 const typedarray = new Uint8Array(this.result);
                 pdfjsLib.getDocument(typedarray).promise.then((pdf) => {
                     currentPdfDoc = pdf;
-                    initVirtualRender();
+                    initVirtualRender(1);
                 }).catch(err => {
                     alert("PDF解析失败: " + err.message);
                     loadingOverlay.style.display = 'none';
@@ -612,7 +602,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
             fileReader.readAsArrayBuffer(file);
         });
 
-        async function initVirtualRender() {
+        async function initVirtualRender(targetPageNum = 1) {
             if (!currentPdfDoc) return;
             loadingOverlay.style.display = 'block';
             pdfViewerContent.innerHTML = '';
@@ -643,6 +633,14 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
                 pdfViewerContent.appendChild(pageContainer);
             }
 
+            // 瞬间切换到目标页面位置，彻底取消滚动过渡平滑
+            if (targetPageNum > 1) {
+                const targetEl = document.getElementById(`page-container-${targetPageNum}`);
+                if (targetEl) {
+                    pdfPanel.scrollTo({ top: targetEl.offsetTop, behavior: 'instant' });
+                }
+            }
+
             loadingOverlay.style.display = 'none';
 
             // 2. 配置 Intersection Observer 懒加载引擎
@@ -670,6 +668,16 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
 
             // 把所有页面骨架送进观察器
             document.querySelectorAll('.pdf-page-container').forEach(el => pageObserver.observe(el));
+
+            // 强制重置观察者，确保定位后立刻触发当前页渲染，防止白屏或字体错位
+            setTimeout(() => {
+                if (pageObserver) {
+                    document.querySelectorAll('.pdf-page-container').forEach(el => {
+                        pageObserver.unobserve(el);
+                        pageObserver.observe(el);
+                    });
+                }
+            }, 50);
         }
 
         async function renderSinglePage(container, pageNum, containerWidth) {
@@ -793,15 +801,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
 
         function togglePdfTheme() {
             pdfPanel.classList.toggle('invert-mode');
-            pdfPanel.classList.toggle('dark-mode');
             dictSidebar.classList.toggle('dark-theme');
-        }
-
-        function toggleSidebarHeader() {
-            const header = document.getElementById('sidebarHeader');
-            const btn = document.getElementById('toggleHeaderBtn');
-            header.classList.toggle('hidden');
-            btn.innerText = header.classList.contains('hidden') ? '▼' : '▲';
         }
 
         window.addEventListener('DOMContentLoaded', initDictDB);
@@ -811,7 +811,10 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
-                if (currentPdfDoc) initVirtualRender();
+                if (currentPdfDoc) {
+                    const savedPage = findCurrentVisiblePage();
+                    initVirtualRender(savedPage);
+                }
             }, 300);
         });
     </script>
