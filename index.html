@@ -394,13 +394,15 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         <div class="split-divider" id="splitDivider"></div>
 
         <div class="dict-sidebar" id="dictSidebar">
-            <div class="sidebar-header" style="display: flex; gap: 10px; padding: 15px 24px;">
+            <div class="sidebar-header" id="sidebarHeader" style="display: flex; gap: 10px; padding: 15px 24px; position: relative;">
                 <button class="btn-action" onclick="document.getElementById('pdf-file-picker').click()">📂 PDF</button>
                 <button class="btn-action" style="background: #6366f1; color: white;" onclick="document.getElementById('dict-file-picker').click()">📥 词库</button>
                 <button class="btn-action" style="background: #475569; color: white;" onclick="togglePdfTheme()">🌓 模式</button>
+                <button onclick="toggleSidebarHeader()" style="position: absolute; right: 5px; top: 5px; cursor: pointer; border: none; background: transparent; opacity: 0.5; font-size: 16px;">⚙️</button>
                 <input type="file" id="pdf-file-picker" accept=".pdf">
                 <input type="file" id="dict-file-picker" accept=".json" style="display: none;">
             </div>
+            <button id="showBtn" onclick="toggleSidebarHeader()" style="display: none; position: absolute; right: 10px; top: 10px; z-index: 100; cursor: pointer; border: none; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px; font-size: 18px;">⚙️</button>
 
             <div class="dict-content-container">
                 <div id="dict-content-area">
@@ -802,6 +804,18 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         function togglePdfTheme() {
             pdfPanel.classList.toggle('invert-mode');
             dictSidebar.classList.toggle('dark-theme');
+        }
+
+        function toggleSidebarHeader() {
+            const header = document.getElementById('sidebarHeader');
+            const btn = document.getElementById('showBtn');
+            if (header.style.display === 'none') {
+                header.style.display = 'flex';
+                btn.style.display = 'none';
+            } else {
+                header.style.display = 'none';
+                btn.style.display = 'block';
+            }
         }
 
         window.addEventListener('DOMContentLoaded', initDictDB);
