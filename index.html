@@ -629,7 +629,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
 
         // 4. ✅ 修复核心：PDF 智能虚拟懒加载 (防内存溢出)
         filePicker.addEventListener('change', (e) => {
-            const file = e.target.files[0];
+            const file = e.target.files[0] || (e.target.files.length > 0 ? e.target.files[0] : null);
             if (!file) return;
             loadingOverlay.style.display = 'block';
             document.getElementById('loading-text').innerText = "正在解析文档结构...";
@@ -861,7 +861,19 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
             }
         }
 
-        window.addEventListener('DOMContentLoaded', initDictDB);
+        window.addEventListener('DOMContentLoaded', () => {
+            initDictDB();
+            
+            // 动态注入针对安卓/三星系统底层的最强秒开通道指令
+            const picker = document.getElementById('pdf-file-picker');
+            if (picker) {
+                // 核心：强制调用系统原生“文档驱动”，直接锁定最近文档或特定安全渠道，死死卡住媒体扫描器
+                picker.setAttribute('type', 'file');
+                picker.setAttribute('accept', 'application/pdf');
+                // 强制要求系统使用 DOCUMENTS 渠道而不是 MEDIA 渠道
+                picker.removeAttribute('multiple');
+            }
+        });
 
         // 窗口拉伸防抖动重绘
         let resizeTimeout;
