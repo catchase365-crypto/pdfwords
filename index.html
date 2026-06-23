@@ -249,6 +249,27 @@
             padding: 20px;
             border-bottom: 1px solid var(--card-border);
             background: rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+            overflow: hidden;
+        }
+        .sidebar-header.hidden {
+            height: 0;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+        }
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         .sidebar-title {
@@ -401,7 +422,8 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         <div class="split-divider" id="splitDivider"></div>
 
         <div class="dict-sidebar" id="dictSidebar">
-            <div class="sidebar-header" style="display: flex; gap: 10px; padding: 15px 24px;">
+            <button class="toggle-btn" id="toggleHeaderBtn" onclick="toggleSidebarHeader()">↕</button>
+            <div class="sidebar-header" id="sidebarHeader" style="display: flex; gap: 10px; padding: 15px 24px;">
                 <button class="btn-action" onclick="document.getElementById('pdf-file-picker').click()">📂 PDF</button>
                 <button class="btn-action" style="background: #6366f1; color: white;" onclick="document.getElementById('dict-file-picker').click()">📥 词库</button>
                 <button class="btn-action" style="background: #475569; color: white;" onclick="togglePdfTheme()">🌓 模式</button>
@@ -773,6 +795,13 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
             pdfPanel.classList.toggle('invert-mode');
             pdfPanel.classList.toggle('dark-mode');
             dictSidebar.classList.toggle('dark-theme');
+        }
+
+        function toggleSidebarHeader() {
+            const header = document.getElementById('sidebarHeader');
+            const btn = document.getElementById('toggleHeaderBtn');
+            header.classList.toggle('hidden');
+            btn.innerText = header.classList.contains('hidden') ? '▼' : '▲';
         }
 
         window.addEventListener('DOMContentLoaded', initDictDB);
