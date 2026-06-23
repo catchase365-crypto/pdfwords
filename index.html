@@ -404,7 +404,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
                 <button class="btn-action" style="background: #6366f1; color: white;" onclick="document.getElementById('dict-file-picker').click()">📥 词库</button>
                 <button class="btn-action" style="background: #475569; color: white;" onclick="togglePdfTheme()">🌓 模式</button>
                 <button onclick="toggleSidebarHeader()" style="position: absolute; right: 5px; top: 5px; cursor: pointer; border: none; background: transparent; opacity: 0.5; font-size: 16px;">⚙️</button>
-                <input type="file" id="pdf-file-picker" accept="application/pdf,.pdf">
+                <input type="file" id="pdf-file-picker" accept="application/pdf,.pdf" multiple>
                 <input type="file" id="dict-file-picker" accept=".json" style="display: none;">
             </div>
             <button id="showBtn" onclick="toggleSidebarHeader()" style="display: none; position: absolute; right: 10px; top: 10px; z-index: 100; cursor: pointer; border: none; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px; font-size: 18px;">⚙️</button>
