@@ -124,6 +124,11 @@
             width: 100% !important;
             height: auto !important;
             animation: fadeInCanvas 0.4s ease-in;
+            transition: filter 0.3s ease;
+        }
+
+        .pdf-panel.invert-mode canvas {
+            filter: invert(0.9) hue-rotate(180deg);
         }
 
         @keyframes fadeInCanvas {
@@ -336,16 +341,12 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         <div class="split-divider" id="splitDivider"></div>
 
         <div class="dict-sidebar" id="dictSidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">
-                    <span>📖 核心译显内核</span>
-                    <button class="btn-action" onclick="document.getElementById('pdf-file-picker').click()">📂 打开 PDF</button>
-                </div>
+            <div class="sidebar-header" style="display: flex; gap: 10px; padding: 15px 24px;">
+                <button class="btn-action" onclick="document.getElementById('pdf-file-picker').click()">📂 PDF</button>
+                <button class="btn-action" style="background: #6366f1; color: white;" onclick="document.getElementById('dict-file-picker').click()">📥 词库</button>
+                <button class="btn-action" style="background: #475569; color: white;" onclick="togglePdfTheme()">🌓 模式</button>
                 <input type="file" id="pdf-file-picker" accept=".pdf">
-                <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between;">
-                    <span id="db-status">正在连接本地词库...</span>
-                    <span id="pdf-status">未加载文档</span>
-                </div>
+                <input type="file" id="dict-file-picker" accept=".json" style="display: none;">
             </div>
 
             <div class="dict-content-container">
@@ -380,21 +381,34 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         const splitDivider = document.getElementById('splitDivider');
         const dictSidebar = document.getElementById('dictSidebar');
         const filePicker = document.getElementById('pdf-file-picker');
+        const dictFilePicker = document.getElementById('dict-file-picker');
         const contentArea = document.getElementById('dict-content-area');
         const loadingOverlay = document.getElementById('loadingOverlay');
+
+        dictFilePicker.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file || !localDictDb) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    const tx = localDictDb.transaction([DICT_STORE_NAME], "readwrite");
+                    const store = tx.objectStore(DICT_STORE_NAME);
+                    data.forEach(item => store.put(item));
+                    tx.oncomplete = () => alert("✅ 词库导入成功！");
+                } catch (err) { alert("❌ 导入失败: JSON格式不正确"); }
+            };
+            reader.readAsText(file);
+        });
 
         // 1. 初始化数据库
         function initDictDB() {
             const req = indexedDB.open(DICT_DB_NAME, 1);
-            req.onsuccess = (e) => {
-                localDictDb = e.target.result;
-                document.getElementById('db-status').innerText = "🟢 本地纯净词库已联动";
-                document.getElementById('db-status').style.color = "var(--color-correct)";
+            req.onupgradeneeded = (e) => {
+                let db = e.target.result;
+                if (!db.objectStoreNames.contains(DICT_STORE_NAME)) db.createObjectStore(DICT_STORE_NAME, { keyPath: "word" });
             };
-            req.onerror = () => {
-                document.getElementById('db-status').innerText = "🔴 词库连通失败";
-                document.getElementById('db-status').style.color = "var(--color-wrong)";
-            };
+            req.onsuccess = (e) => { localDictDb = e.target.result; };
         }
 
         // 2. 深度检索数据库 (含词态还原逻辑)
@@ -498,17 +512,13 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         filePicker.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
             loadingOverlay.style.display = 'block';
             document.getElementById('loading-text').innerText = "正在解析文档结构...";
-            document.getElementById('pdf-status').innerText = "⏳ 解析中...";
-
             const fileReader = new FileReader();
             fileReader.onload = function() {
                 const typedarray = new Uint8Array(this.result);
                 pdfjsLib.getDocument(typedarray).promise.then((pdf) => {
                     currentPdfDoc = pdf;
-                    document.getElementById('pdf-status').innerText = `📄 共 ${pdf.numPages} 页`;
                     initVirtualRender();
                 }).catch(err => {
                     alert("PDF解析失败: " + err.message);
@@ -696,6 +706,10 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
                 queryDictionary(selectedText);
             }
         });
+
+        function togglePdfTheme() {
+            pdfPanel.classList.toggle('invert-mode');
+        }
 
         window.addEventListener('DOMContentLoaded', initDictDB);
 
