@@ -94,9 +94,14 @@
             min-width: 200px;
             overflow-y: auto;
             overflow-x: hidden;
-            background: rgba(10, 15, 30, 0.6);
+            background: #ffffff;
             scroll-behavior: smooth;
             position: relative;
+            transition: background 0.3s;
+        }
+
+        .pdf-panel.dark-mode {
+            background: rgba(10, 15, 30, 0.6);
         }
 
         .pdf-viewer-content {
@@ -382,7 +387,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
         <div class="pdf-panel" id="pdfPanel">
             <div class="pdf-viewer-content" id="pdfViewerContent">
                 <div class="welcome-box">
-                    <p style="font-size: 1.2rem; margin-bottom: 15px;">📚 欢迎使用 PDF 智能点读机</p>
+                    <p style="font-size: 1.2rem; margin-bottom: 15px;">欢迎使用 PDF 智能点读机</p>
                     <p style="font-size: 0.95rem; color: var(--text-muted);">请在右侧边栏加载您的 PDF 文件。点击或选取任意英文单词，即可同步调用本地词库。</p>
                 </div>
             </div>
@@ -766,6 +771,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
 
         function togglePdfTheme() {
             pdfPanel.classList.toggle('invert-mode');
+            pdfPanel.classList.toggle('dark-mode');
             dictSidebar.classList.toggle('dark-theme');
         }
 
