@@ -94,7 +94,7 @@
             min-width: 200px;
             overflow-y: auto;
             overflow-x: hidden;
-            background: #ffffff; /* 浅色模式下，重置区间的底层背景默认为纯白，防止清空内容时露出底层的深色背景 */
+            background: #e8dfc4; /* 调深加温后的温润书页色 */
             transition: background 0.3s;
             position: relative;
         }
@@ -116,12 +116,10 @@
             margin: 0; 
             padding: 0;
             line-height: 0;
-            background: transparent;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: #f1ebd7;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             width: 100% !important;
-            /* 加入一个微妙的底色，懒加载时即便没渲染出来也能区分页面 */
-            background-color: rgba(255,255,255,0.02);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
         .pdf-page-container canvas {
@@ -129,6 +127,8 @@
             width: 100% !important;
             height: auto !important;
             transition: filter 0.3s ease;
+            mix-blend-mode: multiply; /* 正片叠底：消除 Canvas 的纯白背景，使其透出底部的护眼米黄色 */
+            filter: sepia(0.5) contrast(0.95); /* 注入复古纸张调和，降低高频亮光，让纸质感更柔和沉稳 */
         }
 
         .pdf-panel.invert-mode canvas {
@@ -137,14 +137,14 @@
 
         /* --- 词典面板主题切换 --- */
         .dict-sidebar {
-            background: #ffffff; 
+            background: #f1ebd7; 
             color: #1a1a1a;
             transition: background 0.3s, color 0.3s;
         }
 
         /* 强制覆盖深色背景变量 */
         .dict-sidebar:not(.dark-theme) {
-            background: #ffffff !important;
+            background: #e8dfc4 !important; /* 深度联动左侧的羊皮纸护眼色 */
         }
 
         .dict-sidebar.dark-theme {
@@ -171,12 +171,12 @@
 
         /* 浅色模式下的文字颜色 */
         .dict-sidebar:not(.dark-theme) .dict-word-title {
-            color: #0284c7;
-            border-bottom-color: #0284c7;
+            color: #5c4308;
+            border-bottom-color: #bfae8a;
         }
 
         .dict-sidebar:not(.dark-theme) .dict-mdx-content {
-            color: #334155;
+            color: #2b261f; /* 适度加深字重，在微调后的背景上更清晰、不费眼 */
         }
 
         @keyframes fadeInCanvas {
@@ -240,8 +240,8 @@
         }
 
         .dict-sidebar:not(.dark-theme) {
-            background: #ffffff !important;
-            border-left: 1px solid #e2e8f0 !important;
+            background: #e8dfc4 !important;
+            border-left: 1px solid #c8bc9e !important; /* 调深边框，配合整体质感 */
         }
 
         .sidebar-header {
