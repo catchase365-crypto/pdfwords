@@ -131,6 +131,50 @@
             filter: invert(0.9) hue-rotate(180deg);
         }
 
+        /* --- 词典面板主题切换 --- */
+        .dict-sidebar {
+            background: #ffffff; 
+            color: #1a1a1a;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* 强制覆盖深色背景变量 */
+        .dict-sidebar:not(.dark-theme) {
+            background: #ffffff !important;
+        }
+
+        .dict-sidebar.dark-theme {
+            background: #1a1b1e; /* 深度灰，匹配 PDF 反色后的深色调 */
+            color: #ffffff;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .dict-sidebar.dark-theme .sidebar-header {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .dict-sidebar.dark-theme .sidebar-title {
+            color: #ffffff;
+        }
+
+        .dict-sidebar.dark-theme .dict-word-title {
+            color: var(--color-cursor);
+        }
+
+        .dict-sidebar.dark-theme .dict-mdx-content {
+            color: #e2e8f0;
+        }
+
+        /* 浅色模式下的文字颜色 */
+        .dict-sidebar:not(.dark-theme) .dict-word-title {
+            color: #0284c7;
+            border-bottom-color: #0284c7;
+        }
+
+        .dict-sidebar:not(.dark-theme) .dict-mdx-content {
+            color: #334155;
+        }
+
         @keyframes fadeInCanvas {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -189,6 +233,11 @@
             display: flex;
             flex-direction: column;
             z-index: 5;
+        }
+
+        .dict-sidebar:not(.dark-theme) {
+            background: #ffffff !important;
+            border-left: 1px solid #e2e8f0 !important;
         }
 
         .sidebar-header {
@@ -256,14 +305,20 @@
         }
 
         /* 还原深色模式特制：深蓝音标与词头转高亮黄加粗 */
-        .dict-mdx-content font[color="#0069b9" i],
-        .dict-mdx-content font[color="#0000D0" i],
-        .dict-mdx-content font[color="navy" i],
-        .dict-mdx-content b[style*="color:#0077cf" i],
-        .dict-mdx-content span[style*="color:#0077cf" i] {
+        /* 仅在深色模式下将深蓝音标/词头转为高亮黄 */
+        .dict-sidebar.dark-theme .dict-mdx-content font[color="#0069b9" i],
+        .dict-sidebar.dark-theme .dict-mdx-content font[color="#0000D0" i],
+        .dict-sidebar.dark-theme .dict-mdx-content font[color="navy" i],
+        .dict-sidebar.dark-theme .dict-mdx-content b[style*="color:#0077cf" i],
+        .dict-sidebar.dark-theme .dict-mdx-content span[style*="color:#0077cf" i] {
             color: #ffeb3b !important;
             font-weight: bold !important;
             text-shadow: 0 0 2px rgba(0, 0, 0, 0.8) !important;
+        }
+
+        /* 浅色模式保持原样 (蓝色) */
+        .dict-sidebar:not(.dark-theme) .dict-mdx-content font {
+            text-shadow: none !important;
         }
 
         #pdf-file-picker { display: none; }
@@ -711,6 +766,7 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
 
         function togglePdfTheme() {
             pdfPanel.classList.toggle('invert-mode');
+            dictSidebar.classList.toggle('dark-theme');
         }
 
         window.addEventListener('DOMContentLoaded', initDictDB);
