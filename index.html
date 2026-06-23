@@ -509,9 +509,12 @@ window.addEventListener("click", function(){ var d=document.documentElement; (d.
                 let w = originalWord;
 
                 // 【级别 1：副词形态还原系列 (ly / ily / ally)】
-                if (w.endsWith('ily')) { queue.push(w.slice(0, -3) + 'y'); queue.push(w.slice(0, -2)); }
-                else if (w.endsWith('ally')) queue.push(w.slice(0, -4));
-                else if (w.endsWith('ly')) { queue.push(w.slice(0, -2)); if(w.endsWith('bly')) queue.push(w.slice(0, -3) + 'le'); }
+                if (w.endsWith('ly')) {
+                    queue.push(w.slice(0, -2)); // 去ly -> surgically -> surgicall
+                    if (w.endsWith('ally')) queue.push(w.slice(0, -4)); // 去ally -> surgically -> surgical
+                    if (w.endsWith('ily')) { queue.push(w.slice(0, -3) + 'y'); queue.push(w.slice(0, -2)); }
+                    if (w.endsWith('bly')) queue.push(w.slice(0, -3) + 'le');
+                }
 
                 // 【级别 2：名词复数/动词三单系列 (ies / es / s / ves)】
                 if (w.endsWith('ies')) queue.push(w.slice(0, -3) + 'y');
